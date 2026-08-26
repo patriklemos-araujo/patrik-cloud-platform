@@ -18,6 +18,11 @@ spec:
           imagePullPolicy: Never
           ports:
             - containerPort: 8000
+          envFrom:
+            - configMapRef:
+                name: api-config
+            - secretRef:
+                name: api-secret
           livenessProbe:
             httpGet:
               path: /healthz
