@@ -10,6 +10,7 @@ services:
     environment:
       POSTGRES_USER: patrik
       POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: appdb
     ports:
       - "5432:5432"
       
