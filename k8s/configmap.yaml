@@ -6,4 +6,6 @@ data:
   APP_ENV: "development"
   LOG_LEVEL: "info"
   DB_HOST: "db-service"
+  DB_PORT: "5432"
   DB_NAME: "appdb"
+  DB_USER: "patrik"
