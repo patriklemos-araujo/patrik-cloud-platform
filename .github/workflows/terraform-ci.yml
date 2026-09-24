@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   terraform:
@@ -33,3 +34,12 @@ jobs:
 
       - name: Verificar formatacao
         run: terraform fmt -check -diff
+
+      - name: Autenticar na AWS
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::910093226300:role/github-actions-terraform-ci
+          aws-region: us-east-1
+          
+      - name: Verificar identidade AWS
+        run: aws sts get-caller-identity
