@@ -1,0 +1,35 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "terraform-labs/03-remote-state/app/**"
+      - ".github/workflows/terraform-ci.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform - remote state app
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform-labs/03-remote-state/app
+
+    steps:
+      - name: Checkout do repositorio
+        uses: actions/checkout@v7
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.8"
+
+      - name: Verificar formatacao
+        run: terraform fmt -check -diff

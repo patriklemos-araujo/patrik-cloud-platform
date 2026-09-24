@@ -6,9 +6,9 @@ terraform {
   }
 
   backend "s3" {
-    bucket = "patrik-terraform-state-lab-910093226300"
-    key    = "03-remote-state/app/terraform.tfstate"
-    region = "us-east-1"
+    bucket       = "patrik-terraform-state-lab-910093226300"
+    key          = "03-remote-state/app/terraform.tfstate"
+    region       = "us-east-1"
     use_lockfile = true
   }
 }
