@@ -47,8 +47,12 @@ jobs:
       - name: Inicializar Terraform
         run: terraform init -input=false -no-color
 
+      - name: Mostrar alteracoes no lockfile
+        run: git diff -- .terraform.lock.hcl
+
       - name: Validar Terraform
         run: terraform validate -no-color
 
       - name: Planejar Terraform
         run: terraform plan -input=false -no-color -lock-timeout=60s
+
