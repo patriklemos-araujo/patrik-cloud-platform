@@ -4,3 +4,13 @@ __pycache__/
 .terraform/
 *.tfstate
 *.tfstate.backup
+
+# Kubernetes secrets
+k8s/secret.yaml
+
+# Terraform transient files
+crash.log
+crash.*.log
+
+# Terraform lab generated files
+terraform-labs/**/*.txt
