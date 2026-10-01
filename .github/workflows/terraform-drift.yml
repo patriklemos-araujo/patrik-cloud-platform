@@ -1,0 +1,81 @@
+name: Terraform Drift Detection
+
+on:
+  schedule:
+    - cron: "0 11 * * *"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  drift:
+    name: Terraform Drift Detection
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    defaults:
+      run:
+        working-directory: terraform-labs/03-remote-state/app
+
+    steps:
+      - name: Checkout do repositorio
+        uses: actions/checkout@v7
+
+      - name: Instalar Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.8"
+
+      - name: Autenticar na AWS
+        uses: aws-actions/configure-aws-credentials@v6.3.0
+        with:
+          role-to-assume: arn:aws:iam::910093226300:role/github-actions-terraform-ci
+          aws-region: us-east-1
+
+      - name: Verificar identidade AWS
+        run: aws sts get-caller-identity
+
+      - name: Inicializar Terraform
+        run: terraform init -input=false -no-color
+
+      - name: Detectar drift
+        id: plan
+        shell: bash
+        run: |
+          set +e
+
+          terraform plan \
+            -detailed-exitcode \
+            -input=false \
+            -no-color \
+            -lock-timeout=60s
+
+          EXIT_CODE=$?
+
+          set -e
+
+          echo "exitcode=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+
+          if [ "$EXIT_CODE" -eq 1 ]; then
+            echo "Terraform plan failed."
+            exit 1
+          fi
+
+          exit 0
+
+
+      - name: Nenhum drift detectado
+        if: steps.plan.outputs.exitcode == '0'
+        run: echo "✅ Nenhum drift detectado. Infraestrutura alinhada com o Terraform."
+
+      - name: Drift detectado
+        if: steps.plan.outputs.exitcode == '2'
+        run: |
+          echo "⚠️ Drift detectado."
+          echo "A infraestrutura real possui diferenças em relação ao estado desejado."
+          exit 1
