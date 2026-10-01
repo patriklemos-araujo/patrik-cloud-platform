@@ -1,7 +1,8 @@
 terraform {
   required_providers {
-    local = {
-      source = "hashicorp/local"
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
     }
   }
 
@@ -13,7 +14,19 @@ terraform {
   }
 }
 
-resource "local_file" "remote_state_lab" {
-  filename = "${path.module}/remote-state-lab.txt"
-  content  = "Teste de state locking com backend S3."
+provider "aws" {
+  region = "us-east-1"
+}
+
+resource "aws_ssm_parameter" "remote_state_lab" {
+  name  = "/patrik-cloud-platform/remote-state-lab/message"
+  type  = "String"
+  value = "Terraform CI remote state lab"
+
+  tags = {
+    Environment = "lab"
+    Project     = "patrik-cloud-platform"
+    ManagedBy   = "Terraform"
+    Repository  = "patrik-cloud-platform"
+  }
 }
