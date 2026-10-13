@@ -1,0 +1,51 @@
+name: Build and Push to ECR
+
+on:
+  push:
+    branches:
+      - main
+      - feat/ecr-ecs-fargate-lab
+    paths:
+      - "terraform-labs/07-ecr-ecs-fargate/app/**"
+      - ".github/workflows/ecr-build-push.yml"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: patrik-cloud-platform-app
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::910093226300:role/github-actions-ecs-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build Docker image
+        working-directory: terraform-labs/07-ecr-ecs-fargate/app
+        run: |
+          docker build -t $ECR_REPOSITORY:${GITHUB_SHA} .
+
+      - name: Tag Docker image
+        run: |
+          docker tag $ECR_REPOSITORY:${GITHUB_SHA} \
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${GITHUB_SHA}
+
+      - name: Push Docker image
+        run: |
+          docker push \
+          ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${GITHUB_SHA}
