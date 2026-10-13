@@ -1,4 +1,4 @@
-name: Build and Push to ECR
+name: Build, Push and Deploy to ECS
 
 on:
   push:
@@ -7,6 +7,7 @@ on:
       - feat/ecr-ecs-fargate-lab
     paths:
       - "terraform-labs/07-ecr-ecs-fargate/app/**"
+      - "terraform-labs/07-ecr-ecs-fargate/ecs-task-definition.json"
       - ".github/workflows/ecr-build-push.yml"
 
 permissions:
@@ -16,9 +17,13 @@ permissions:
 env:
   AWS_REGION: us-east-1
   ECR_REPOSITORY: patrik-cloud-platform-app
+  ECS_CLUSTER: patrik-cloud-platform-cluster
+  ECS_SERVICE: patrik-cloud-platform-service
+  ECS_TASK_DEFINITION: terraform-labs/07-ecr-ecs-fargate/ecs-task-definition.json
+  CONTAINER_NAME: app
 
 jobs:
-  build-and-push:
+  build-push-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -49,3 +54,19 @@ jobs:
         run: |
           docker push \
           ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:${GITHUB_SHA}
+
+      - name: Render ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+
+      - name: Deploy to Amazon ECS
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true

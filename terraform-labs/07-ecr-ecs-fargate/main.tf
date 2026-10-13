@@ -374,6 +374,12 @@ resource "aws_ecs_service" "app" {
     aws_iam_role_policy_attachment.ecs_task_execution
   ]
 
+  lifecycle {
+    ignore_changes = [
+      task_definition
+    ]
+  }
+
   tags = {
     Environment = "lab"
     Project     = "patrik-cloud-platform"
@@ -429,6 +435,42 @@ resource "aws_iam_role" "github_actions" {
 }
 
 data "aws_iam_policy_document" "github_actions_ecr" {
+
+  statement {
+    sid = "DeployToECS"
+
+    actions = [
+      "ecs:RegisterTaskDefinition",
+      "ecs:DescribeTaskDefinition",
+      "ecs:DescribeServices",
+      "ecs:UpdateService"
+    ]
+
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "PassECSTaskExecutionRole"
+
+    actions = [
+      "iam:PassRole"
+    ]
+
+    resources = [
+      aws_iam_role.ecs_task_execution.arn
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "iam:PassedToService"
+
+      values = [
+        "ecs-tasks.amazonaws.com"
+      ]
+    }
+  }
+
+
   statement {
     sid = "ECRAuthentication"
 
