@@ -405,12 +405,12 @@ data "aws_iam_policy_document" "github_actions_assume_role" {
     }
 
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
 
       values = [
-        "repo:patriklemos-araujo/patrik-cloud-platform:ref:refs/heads/main",
-        "repo:patriklemos-araujo/patrik-cloud-platform:ref:refs/heads/feat/ecr-ecs-fargate-lab"
+        "repo:patriklemos-araujo@273424479/patrik-cloud-platform@1340041154:ref:refs/heads/main",
+        "repo:patriklemos-araujo@273424479/patrik-cloud-platform@1340041154:ref:refs/heads/feat/ecr-ecs-fargate-lab"
       ]
     }
   }
