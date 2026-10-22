@@ -1,0 +1,24 @@
+
+# Lab 11 - AWS Load Balancer Controller
+# Helm Chart: 1.14.1
+# Controller: v2.14.1
+
+clusterName: patrik-eks-lab
+
+region: us-east-1
+
+vpcId: vpc-0d1d775537c756400
+
+# Single worker lab - not a production HA configuration
+replicaCount: 1
+
+serviceAccount:
+  create: true
+  name: aws-load-balancer-controller
+
+# Amazon VPC CNI supports direct Pod IP targets
+defaultTargetType: ip
+
+# Disable the default Service LoadBalancer mutating webhook
+# for a simpler, Ingress-focused lab
+enableServiceMutatorWebhook: false
