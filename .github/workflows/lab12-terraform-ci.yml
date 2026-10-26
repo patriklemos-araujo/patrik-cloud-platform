@@ -1,0 +1,39 @@
+name: Lab 12 - Terraform CI
+
+on:
+  pull_request:
+    paths:
+      - "terraform-labs/11-eks-helm-alb/**"
+      - ".github/workflows/lab12-terraform-ci.yml"
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Terraform Validate
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform-labs/11-eks-helm-alb
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.8"
+
+      - name: Check Terraform formatting
+        run: terraform fmt -check -diff
+
+      - name: Initialize Terraform
+        run: terraform init -backend=false -input=false -no-color -lockfile=readonly
+
+      - name: Validate Terraform
+        run: terraform validate -no-color
